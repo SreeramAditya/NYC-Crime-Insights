@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crime Statistics Viewer</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Add any additional CSS styles if needed -->
+    <style>
+        body {
+            background-color: #f0f8ff; /* Light Sky Blue background color */
+            font-family: 'Arial', sans-serif; /* Use Arial font */
+            color: #333; /* Dark Gray text color */
+        }
+
+        .container {
+            margin-top: 30px; /* Add space between title and content */
+        }
+
+        h1 {
+            color: #004080; /* Navy Blue title color */
+            text-align: center; /* Center-align the title */
+        }
+        h4 {
+            color: #004080; /* Navy Blue title color */
+            text-align: center; /* Center-align the title */
+        }
+        .project-info {
+            font-size: 14px; /* Small font size for project info */
+            text-align: center; /* Center-align the project info */
+            margin-bottom: 20px; /* Add space between project info and content */
+        }
+
+        .square {
+            border: 2px solid #004080; /* Dark Navy Blue border for each square */
+            padding: 20px;
+            margin: 20px;
+            background-color: #ffffff; /* White background color for squares */
+        }
+
+        .query-button {
+            margin-top: 20px; /* Add space between squares and buttons */
+            text-align: center; /* Center-align the button */
+        }
+
+        .btn-primary {
+            background-color: #91d5f5; /* Navy Blue color for buttons */
+            border-color: #004080; /* Navy Blue color for button borders */
+        }
+        .select-box {
+            border: 2px solid #004080; /* Dark Navy Blue border for each select box */
+            padding: 10px; /* Add padding inside the select box */
+            margin: 10px; /* Add margin around each select box */
+            background-color: #ffffff; /* White background color for select boxes */
+            display: inline-block; /* Display select boxes in a line */
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Allegation against police Statistics</h1>
+</br>
+
+
+    <div class="d-flex justify-content-center">
+        <div class="select-box">
+            <select id="county-select" multiple size="6">
+                <option value="" disabled>Select County</option>
+                {% for county in counties %}
+                    <option value="{{ county }}">{{ county }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="select-box">
+            <select id="year-select" multiple size="6">
+                <option value="" disabled>Select Year</option>
+                {% for year in years %}
+                    <option value="{{ year }}">{{ year }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="select-box">
+            <select id="fado-select" multiple size="6">
+                <option value="" disabled>Please select FADO type</option>
+                {% for fado in fado_types %}
+                    <option value="{{ fado }}">{{ fado }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="select-box">
+            <select id="race-select" multiple size="6">
+                <option value="" disabled>Please select RACE type</option>
+                {% for race in race_types %}
+                    <option value="{{ race }}">{{ race }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="select-box">
+            <select id="age-select" multiple size="6">
+                <option value="" disabled>Please select Age Category</option>
+                {% for age in age_types %}
+                    <option value="{{ age }}">{{ age }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+
+</br>
+    
+    <div class="mb-3 text-center"> <!-- Add text-center class to center align the content -->
+        <button class="btn btn-primary mx-auto" onclick="updateGraph()">Update Graph</button> <!-- Add mx-auto class to center the button -->
+        <a href="/" class="btn btn-secondary mx-2">Back to Home</a> <!-- Added Back to Home button -->
+    </div>
+    <div id="graph-container" style="width:100%;height:100%;"></div>
+    <div id="graph-container-penality" style="width:100%;height:100%;"></div>
+    <div id="graph-container-allegation" style="width:100%;height:100%;"></div>
+    <div id="graph-container-officer" style="width:100%;height:100%;"></div>
+
+    <script>
+        function updateGraph() {
+            var selectedYears = $('#year-select').val() || [];
+            var selectedCounties = $('#county-select').val() || [];
+            var selectedFADO = $('#fado-select').val() || [];
+            var selectedRACE = $('#race-select').val() || [];
+            var selectedAGE = $('#age-select').val() || [];
+
+            $.ajax({
+                url: '/update_graph_5',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ years: selectedYears, counties: selectedCounties, fado_types: selectedFADO ,race_types: selectedRACE, age_types: selectedAGE}),
+                success: function(response) {
+                    var plotDataLine = JSON.parse(response.graph_line);
+                    var plotDataTotal = JSON.parse(response.graph_penalty_trend);
+                    var plotDataPie = JSON.parse(response.allegation_chart);
+                    var officerPie = JSON.parse(response.officer_experience_chart);
+                    Plotly.newPlot('graph-container', plotDataLine);
+                    Plotly.newPlot('graph-container-penality', plotDataTotal);
+                    Plotly.newPlot('graph-container-allegation', plotDataPie);
+                    Plotly.newPlot('graph-container-officer', officerPie);   
+                }
+            });
+        }
+    </script>
+
+
+</body>
+</html>
+
+
+<!--test-->
